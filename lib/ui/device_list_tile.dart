@@ -9,18 +9,16 @@ class DeviceListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final signalColor = _getSignalColor(device.rssi);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       elevation: 1,
       child: ListTile(
         onTap: onTap,
         leading: CircleAvatar(
-          backgroundColor: _getSignalColor(device.rssi).withOpacity(0.2),
-          child: Icon(
-            Icons.bluetooth,
-            color: _getSignalColor(device.rssi),
-            size: 24,
-          ),
+          backgroundColor: signalColor.withValues(alpha: .2),
+          child: Icon(Icons.bluetooth, color: signalColor, size: 24),
         ),
         title: Text(
           device.name.isEmpty ? 'Unknown Device' : device.name,
@@ -41,11 +39,7 @@ class DeviceListTile extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(
-                  _getSignalIcon(device.rssi),
-                  size: 14,
-                  color: _getSignalColor(device.rssi),
-                ),
+                Icon(_getSignalIcon(device.rssi), size: 14, color: signalColor),
                 const SizedBox(width: 4),
                 Text(
                   '${device.rssi} dBm',
@@ -55,7 +49,27 @@ class DeviceListTile extends StatelessWidget {
             ),
           ],
         ),
-        trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            OutlinedButton(
+              onPressed: () {
+                // UI only – hook up pairing logic later
+                debugPrint('Pair pressed for ${device.id}');
+              },
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                visualDensity: VisualDensity.compact,
+              ),
+              child: const Text('Pair', style: TextStyle(fontSize: 12)),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: Colors.grey[400]),
+          ],
+        ),
         isThreeLine: true,
       ),
     );
