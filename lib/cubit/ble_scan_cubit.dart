@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ble_demo/ble_scan_service.dart';
+import 'package:ble_demo/services/ble_scan_service.dart';
 import 'package:ble_demo/cubit/ble_scan_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';

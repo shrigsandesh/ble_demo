@@ -1,12 +1,14 @@
-import 'package:ble_demo/ble_scan_service.dart';
+import 'package:ble_demo/services/ble_scan_service.dart';
 import 'package:ble_demo/cubit/ble_scan_cubit.dart';
 import 'package:ble_demo/cubit/ble_scan_state.dart';
 import 'package:ble_demo/service_locator.dart';
+import 'package:ble_demo/services/permission_helper.dart';
 import 'package:ble_demo/ui/device_list_tile.dart';
 import 'package:ble_demo/ui/empty_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,7 +83,23 @@ class _BLEHomePageState extends State<BLEHomePage> {
                 else
                   IconButton(
                     icon: const Icon(Icons.search),
-                    onPressed: cubit.startScan,
+                    onPressed: () async {
+                      final granted =
+                          await BlePermissionHelper.requestBlePermissions();
+                      if (!granted) return;
+
+                      final locationOn =
+                          await Permission.location.serviceStatus.isEnabled;
+                      if (!locationOn) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Turn ON location')),
+                        );
+                        return;
+                      }
+
+                      cubit.startScan();
+                    },
                     tooltip: 'Start Scan',
                   ),
               ],
