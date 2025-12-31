@@ -1,4 +1,9 @@
+import 'dart:developer';
+
+import 'package:ble_demo/cubit/ble_connect_cubit.dart';
+import 'package:ble_demo/cubit/ble_connection_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class DeviceListTile extends StatelessWidget {
@@ -52,19 +57,42 @@ class DeviceListTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            OutlinedButton(
-              onPressed: () {
-                // UI only – hook up pairing logic later
-                debugPrint('Pair pressed for ${device.id}');
+            BlocBuilder<BleConnectionCubit, BleConnectionState>(
+              builder: (context, state) {
+                log(state.status.toString());
+                if (state.status == BleConnectionStatus.connecting) {
+                  return CircularProgressIndicator.adaptive();
+                }
+                return OutlinedButton(
+                  onPressed: () {
+                    // UI only – hook up pairing logic later
+                    debugPrint('Pair pressed for ${device.id}');
+                    switch (state.status) {
+                      case BleConnectionStatus.connected:
+                        context.read<BleConnectionCubit>().disconnect();
+                      case BleConnectionStatus.initial:
+                      case BleConnectionStatus.disconnected:
+                        context.read<BleConnectionCubit>().connect(device.id);
+                      case BleConnectionStatus.failure:
+                      case BleConnectionStatus.connecting:
+                    }
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  child: Text(
+                    state.status == BleConnectionStatus.connected &&
+                            state.deviceId == device.id
+                        ? "Connected"
+                        : 'Pair',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                );
               },
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                visualDensity: VisualDensity.compact,
-              ),
-              child: const Text('Pair', style: TextStyle(fontSize: 12)),
             ),
             const SizedBox(width: 4),
             Icon(Icons.chevron_right, color: Colors.grey[400]),

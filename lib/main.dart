@@ -1,3 +1,4 @@
+import 'package:ble_demo/cubit/ble_connect_cubit.dart';
 import 'package:ble_demo/services/ble_scan_service.dart';
 import 'package:ble_demo/cubit/ble_scan_cubit.dart';
 import 'package:ble_demo/cubit/ble_scan_state.dart';
@@ -15,10 +16,12 @@ void main() {
   final ble = FlutterReactiveBle();
   final scanService = BleScanService(ble);
   final scanCubit = BleScanCubit(scanService);
+  final connectCubit = BleConnectionCubit(ble);
 
   Locator.register<FlutterReactiveBle>(ble);
   Locator.register<BleScanService>(scanService);
   Locator.register<BleScanCubit>(scanCubit);
+  Locator.register<BleConnectionCubit>(connectCubit);
   runApp(const BLEDemoApp());
 }
 
@@ -44,6 +47,7 @@ class BLEHomePage extends StatefulWidget {
 
 class _BLEHomePageState extends State<BLEHomePage> {
   final cubit = Locator.get<BleScanCubit>();
+  final connectCubit = Locator.get<BleConnectionCubit>();
 
   @override
   void initState() {
@@ -115,15 +119,15 @@ class _BLEHomePageState extends State<BLEHomePage> {
                           itemBuilder: (context, index) {
                             final device = state.devices[index];
 
-                            return DeviceListTile(
-                              key: ValueKey(device.id),
-                              device: device,
-                              onTap: () {
-                                print(
-                                  'Tapped device: ${device.name} (${device.id})',
-                                );
-                                // TODO: navigate to detail screen
-                              },
+                            return BlocProvider.value(
+                              value: connectCubit,
+                              child: DeviceListTile(
+                                key: ValueKey(device.id),
+                                device: device,
+                                onTap: () {
+                                  // TODO: navigate to detail screen
+                                },
+                              ),
                             );
                           },
                         ),
