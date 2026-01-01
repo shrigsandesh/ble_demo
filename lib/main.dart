@@ -4,6 +4,7 @@ import 'package:ble_demo/cubit/ble_scan_cubit.dart';
 import 'package:ble_demo/cubit/ble_scan_state.dart';
 import 'package:ble_demo/service_locator.dart';
 import 'package:ble_demo/services/permission_helper.dart';
+import 'package:ble_demo/ui/connected_device_page.dart';
 import 'package:ble_demo/ui/device_list_tile.dart';
 import 'package:ble_demo/ui/empty_state.dart';
 import 'package:flutter/material.dart';
@@ -94,13 +95,13 @@ class _BLEHomePageState extends State<BLEHomePage> {
 
                       final locationOn =
                           await Permission.location.serviceStatus.isEnabled;
-                      if (!locationOn) {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Turn ON location')),
-                        );
-                        return;
-                      }
+                      // if (!locationOn) {
+                      //   if (!context.mounted) return;
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(content: Text('Turn ON location')),
+                      //   );
+                      //   return;
+                      // }
 
                       cubit.startScan();
                     },
@@ -125,7 +126,24 @@ class _BLEHomePageState extends State<BLEHomePage> {
                                 key: ValueKey(device.id),
                                 device: device,
                                 onTap: () {
-                                  // TODO: navigate to detail screen
+                                  final characteristic = QualifiedCharacteristic(
+                                    serviceId: Uuid.parse(
+                                      "c7b9a3e2-4f6d-4c8e-9f21-6b1d8a920000",
+                                    ),
+                                    characteristicId: Uuid.parse(
+                                      "c7b9a3e2-4f6d-4c8e-9f21-6b1d8a920001",
+                                    ),
+                                    deviceId: device.id,
+                                  );
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ConnectedDevicePage(
+                                        characteristic: characteristic,
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                             );
