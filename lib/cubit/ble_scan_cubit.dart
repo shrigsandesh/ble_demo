@@ -21,7 +21,7 @@ class BleScanCubit extends Cubit<BleScanState> {
   static const _debounceDuration = Duration(milliseconds: 500);
 
   void startScan({
-    Duration timeout = const Duration(seconds: 10),
+    Duration timeout = const Duration(seconds: 2),
     String? stopWhenFoundId,
     bool filterByService = false,
   }) {
