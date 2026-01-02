@@ -2,7 +2,9 @@ import 'dart:developer';
 
 import 'package:ble_demo/cubit/ble_connect_cubit.dart';
 import 'package:ble_demo/cubit/ble_connection_state.dart';
+import 'package:ble_demo/helpers/ble_helper.dart';
 import 'package:ble_demo/service_locator.dart';
+import 'package:ble_demo/ui/connected_device_page.dart';
 import 'package:ble_demo/ui/service_selection_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,41 @@ class DeviceListTile extends StatelessWidget {
   final DiscoveredDevice device;
 
   const DeviceListTile({super.key, required this.device});
+
+  void _showAlert(
+    BuildContext context, {
+    required VoidCallback onViewStream,
+    required VoidCallback onViewDetails,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Choose an option'),
+
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: [
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onViewStream();
+              },
+              icon: const Icon(Icons.stream, size: 18),
+              label: const Text('Stream'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onViewDetails();
+              },
+              icon: const Icon(Icons.info_outline, size: 18),
+              label: const Text('Details'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,19 +66,11 @@ class DeviceListTile extends StatelessWidget {
           child: ListTile(
             onTap: () async {
               if (isConnected) {
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) =>
-                      const Center(child: CircularProgressIndicator()),
-                );
-
                 try {
                   final services = await Locator.get<BleConnectionCubit>()
                       .discoverServices(device.id);
 
                   if (!context.mounted) return;
-                  Navigator.pop(context);
 
                   if (services.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -50,14 +79,42 @@ class DeviceListTile extends StatelessWidget {
                     return;
                   }
 
-                  Navigator.push(
+                  _showAlert(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => ServiceSelectionPage(
-                        device: device,
-                        services: services,
-                      ),
-                    ),
+                    onViewStream: () {
+                      final characteristic = QualifiedCharacteristic(
+                        serviceId: Uuid.parse(
+                          "c7b9a3e2-4f6d-4c8e-9f21-6b1d8a920000",
+                        ),
+                        characteristicId: Uuid.parse(
+                          'c7b9a3e2-4f6d-4c8e-9f21-6b1d8a920001',
+                        ),
+                        deviceId: device.id,
+                      );
+                      final charName = BleUuidHelper.getCharacteristicName(
+                        characteristic.characteristicId,
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ConnectedDevicePage(
+                            characteristic: characteristic,
+                            charName: charName,
+                          ),
+                        ),
+                      );
+                    },
+                    onViewDetails: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ServiceSelectionPage(
+                            device: device,
+                            services: services,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 } catch (e) {
                   if (!context.mounted) return;
