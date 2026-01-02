@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
@@ -19,9 +20,13 @@ class BleNotificationService {
             _controller.add(data);
           },
           onError: (error) {
-            print("BLE subscription error: $error");
+            log("BLE subscription error: $error");
           },
         );
+  }
+
+  Future<List<int>> read(QualifiedCharacteristic characteristic) {
+    return _ble.readCharacteristic(characteristic);
   }
 
   /// Stop notifications

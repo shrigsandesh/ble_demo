@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:ble_demo/services/ble_notification_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +20,15 @@ class BleNotificationCubit extends Cubit<List<int>> {
 
   void unsubscribe() {
     _service.unsubscribe();
+  }
+
+  Future<void> readInitialValue(QualifiedCharacteristic characteristic) async {
+    try {
+      final value = await _service.read(characteristic);
+      emit(value);
+    } catch (e) {
+      log("Error reading characteristic: $e");
+    }
   }
 
   @override

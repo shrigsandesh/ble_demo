@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'ble_connection_state.dart';
@@ -85,6 +86,21 @@ class BleConnectionCubit extends Cubit<BleConnectionState> {
         deviceId: state.deviceId,
       ),
     );
+  }
+
+  /// Discover all services for a device using the new API
+  Future<List<Service>> discoverServices(String deviceId) async {
+    try {
+      // First, trigger service discovery
+      await _ble.discoverAllServices(deviceId);
+
+      // Then, retrieve the discovered services
+      final services = await _ble.getDiscoveredServices(deviceId);
+      return services;
+    } catch (e) {
+      log('Error discovering services: $e');
+      return [];
+    }
   }
 
   @override
